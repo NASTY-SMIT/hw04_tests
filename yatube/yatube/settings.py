@@ -8,9 +8,9 @@ SECRET_KEY = 'v033^ngje!rn#x1at&3g418lwjf0lj20gt0+$f(7n1az2nq@qy'
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost',
-    '127.0.0.1',
-    '[::1]',
-    'testserver',]
+                 '127.0.0.1',
+                 '[::1]',
+                 'testserver']
 
 
 INSTALLED_APPS = [
