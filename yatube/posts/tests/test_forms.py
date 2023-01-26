@@ -32,6 +32,7 @@ class PostFormTests(TestCase):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
+        self.guest_client = Client()
         self.user = User.objects.create_user(username='Test')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -55,3 +56,50 @@ class PostFormTests(TestCase):
                 text='Тестовый текст'
             ).exists()
         )
+        form_data = {
+            'text': 'Тестовый текст',
+            'group': 'Тестовая группа',
+        }
+        self.assertTrue(
+            Post.objects.filter(
+                text='Тестовый текст',
+                group=self.group
+            ).exists()
+        )
+
+    def test_create_post_by_guest_client(self):
+        """Аноним не может создавать посты"""
+        posts_count = Post.objects.count()
+        form_data = {
+            'text': 'Тестовый текст',
+        }
+        self.guest_client.post(
+            reverse('posts:post_create'),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Post.objects.count(), posts_count)
+
+    def test_edit_post_by_guest_client(self):
+        """Аноним не может редактировать посты"""
+        form_data = {
+            'text': 'Тестовый текст',
+        }
+        self.guest_client.post(
+            reverse('posts:post_edit', kwargs={'post_id': self.post.id}),
+            data=form_data,
+            follow=True
+        )
+        self.assertTrue(
+            Post.objects.filter(
+                text='Тестовый текст'
+            ).exists()
+        )
+
+    def test_edit_post_by_no_author(self):
+        """Не автор не может редактировать посты"""
+        response = self.authorized_client.post(
+            reverse('posts:post_edit', kwargs={
+                    'post_id': self.post.id}))
+        self.assertRedirects(response, reverse('posts:post_detail', kwargs={
+                                               'post_id': self.post.id}))

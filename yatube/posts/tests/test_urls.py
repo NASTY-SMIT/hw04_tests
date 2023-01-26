@@ -1,10 +1,6 @@
 from django.test import TestCase, Client
 
-from django.contrib.auth import get_user_model
-
-from posts.models import Post, Group
-
-User = get_user_model()
+from posts.models import Post, Group, User
 
 
 class PostURLTests(TestCase):
@@ -29,26 +25,19 @@ class PostURLTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
-    def test_home_url_exists_at_desired_location(self):
-        """Страница / доступна любому пользователю."""
-        response = self.guest_client.get('/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_post_group_url_exists_at_desired_location(self):
-        """Страница /group/test-slug/ доступна любому пользователю."""
-        response = self.guest_client.get('/group/test-slug/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_profile_url_exists_at_desired_location(self):
-        """Страница /profile/HasNoName/ доступна любому пользователю."""
-        response = self.guest_client.get('/profile/HasNoName/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_post_detail_url_exists_at_desired_location_authorized(self):
-        """Страница /posts/1/ доступна любому
-        пользователю."""
-        response = self.guest_client.get('/posts/1/')
-        self.assertEqual(response.status_code, 200)
+    def test_url_exists_at_desired_location(self):
+        """URL-адреса доступны любому пользователю"""
+        url_names = {
+            '/': 200,
+            '/group/test-slug/': 200,
+            '/profile/HasNoName/': 200,
+            '/posts/1/': 200,
+            '/unexisting_page/': 404,
+        }
+        for url_name, status_code in url_names.items():
+            with self.subTest(url_name=url_name):
+                response = self.authorized_client.get(url_name)
+                self.assertEqual(response.status_code, status_code)
 
     def test_post_create_url_exists_at_desired_location_authorized(self):
         """Страница /create/ доступна авторизованному
@@ -67,11 +56,6 @@ class PostURLTests(TestCase):
         )
         response = self.author.get('/posts/2/edit/')
         self.assertEqual(response.status_code, 200)
-
-    def test_unexisting_page_url_exists_at_desired_location_authorized(self):
-        """Страница /unexisting_page/ доступна любому пользователю"""
-        response = self.authorized_client.get('/unexisting_page/')
-        self.assertEqual(response.status_code, 404)
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""

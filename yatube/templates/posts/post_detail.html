@@ -35,11 +35,9 @@
       <p>
         {{ post.text }}
       </p>
-      {% if post.author == user %}
       <a class="btn btn-primary" href="{% url 'posts:post_edit' post.pk %}">
         редактировать запись
-      </a> 
-      {% endif %}
+      </a>
     </article>
   </div>
 {% endblock %} 
